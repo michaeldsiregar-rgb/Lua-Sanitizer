@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lua Script Sanitizer & Anti-Keylogger</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-shield-halved"></i> Lua Guard & Anti-Keylogger</h1>
+            <p>Deteksi, Analisis, dan Bersihkan Skrip .Lua Anda dari Keylogger, Stealer, dan HTTP Hooks.</p>
+        </header>
+
+        <main>
+            <!-- Upload Area -->
+            <div class="upload-section">
+                <div class="drop-zone" id="dropZone">
+                    <i class="fa-solid fa-file-code upload-icon"></i>
+                    <p>Tarik & Lepas File <code>.lua</code> di sini, atau</p>
+                    <label for="fileInput" class="btn-primary"><i class="fa-solid fa-folder-open"></i> Pilih File</label>
+                    <input type="file" id="fileInput" accept=".lua,.txt" hidden>
+                </div>
+            </div>
+
+            <!-- Code Editor & Analysis Panel -->
+            <div class="workspace" id="workspace" style="display: none;">
+                <div class="panel">
+                    <h3><i class="fa-solid fa-code"></i> Kode Lua Asli</h3>
+                    <textarea id="rawCode" placeholder="Masukkan atau tempel kode .lua di sini..."></textarea>
+                    <div class="actions">
+                        <button id="scanBtn" class="btn-success"><i class="fa-solid fa-magnifying-glass"></i> Pindai Kode</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Hasil Pembersihan (Cleaned Lua)</h3>
+                    <textarea id="cleanCode" readonly placeholder="Hasil kode bersih akan muncul di sini..."></textarea>
+                    <div class="actions">
+                        <button id="cleanBtn" class="btn-warning"><i class="fa-solid fa-broom"></i> Bersihkan Kode</button>
+                        <button id="downloadBtn" class="btn-primary" disabled><i class="fa-solid fa-download"></i> Unduh File .Lua</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Report -->
+            <div class="report-section" id="reportSection" style="display: none;">
+                <h2><i class="fa-solid fa-list-check"></i> Laporan Deteksi Keamanan</h2>
+                <div id="statusBadge" class="status-badge"></div>
+                <ul id="logList" class="log-list"></ul>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Lua Security Tools. Client-Side Processing (Kode Anda tidak dikirim ke server luar).</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
