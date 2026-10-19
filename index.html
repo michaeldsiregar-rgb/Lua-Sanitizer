@@ -15,7 +15,7 @@
         </header>
 
         <main>
-            <!-- Upload Area -->
+            <!-- Area Upload File -->
             <div class="upload-section">
                 <div class="drop-zone" id="dropZone">
                     <i class="fa-solid fa-file-code upload-icon"></i>
@@ -25,7 +25,7 @@
                 </div>
             </div>
 
-            <!-- Card Konfirmasi Upload (Fitur Baru) -->
+            <!-- Kartu Konfirmasi Upload -->
             <div class="confirm-card" id="confirmCard" style="display: none;">
                 <div class="file-info">
                     <i class="fa-solid fa-file-lines"></i>
@@ -40,10 +40,10 @@
                 </div>
             </div>
 
-            <!-- Code Editor & Analysis Panel -->
+            <!-- Workspace Editor Kode -->
             <div class="workspace" id="workspace" style="display: none;">
                 <div class="panel">
-                    <h3><i class="fa-solid fa-code"></i> Kode Lua Asli</h3>
+                    <h3><i class="fa-solid fa-code"></i> Kode Lua (Telah Didekripsi jika Enkripsi)</h3>
                     <textarea id="rawCode" placeholder="Masukkan atau tempel kode .lua di sini..."></textarea>
                     <div class="actions">
                         <button id="scanBtn" class="btn-success"><i class="fa-solid fa-arrows-rotate"></i> Pindai Ulang</button>
@@ -59,18 +59,39 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Audit Report -->
-            <div class="report-section" id="reportSection" style="display: none;">
-                <h2><i class="fa-solid fa-list-check"></i> Laporan Deteksi Keamanan</h2>
-                <div id="statusBadge" class="status-badge"></div>
-                <ul id="logList" class="log-list"></ul>
-            </div>
         </main>
 
         <footer>
             <p>&copy; 2026 Lua Security Tools. Client-Side Processing (Kode Anda tidak dikirim ke server luar).</p>
         </footer>
+    </div>
+
+    <!-- Modal Popup Alert (Persis Seperti di Foto) -->
+    <div class="modal-overlay" id="modalOverlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-icon red">
+                <i class="fa-solid fa-skull-crossbones"></i>
+            </div>
+            <h2 id="modalTitle">Keylogger Terdeteksi!</h2>
+            <p class="modal-desc" id="modalDesc">
+                File "<span id="modalFileName">file.lua</span>" mengandung <span id="patternCount">0</span> pola mencurigakan dan <span id="urlCount">0</span> URL mencurigakan. File ini berpotensi sebagai keylogger!
+            </p>
+
+            <div class="url-section" id="urlSection" style="display: none;">
+                <div class="url-title">
+                    <i class="fa-solid fa-link"></i> URL Mencurigakan yang Ditemukan
+                </div>
+                <div class="url-box">
+                    <div class="url-header">
+                        <span class="tag-danger">HTTP/HTTPS URL</span>
+                        <button class="btn-copy" id="copyUrlBtn"><i class="fa-solid fa-copy"></i> Salin URL</button>
+                    </div>
+                    <div class="url-text" id="detectedUrlText">-</div>
+                </div>
+            </div>
+
+            <button class="btn-modal-close" id="closeModalBtn"><i class="fa-solid fa-shield"></i> Mengerti</button>
+        </div>
     </div>
 
     <script src="app.js"></script>

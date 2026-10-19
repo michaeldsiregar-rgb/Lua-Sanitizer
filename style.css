@@ -6,45 +6,44 @@
 }
 
 body {
-    background-color: #0d1117;
+    background-color: #0b0e14;
     color: #c9d1d9;
     min-height: 100vh;
     padding: 20px;
-    overflow-x: hidden; /* Mencegah layar geser horizontal berlebih */
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 0 auto;
-    width: 100%;
 }
 
 header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 header h1 {
     color: #58a6ff;
-    font-size: 2.2rem;
-    margin-bottom: 10px;
+    font-size: 2rem;
+    margin-bottom: 8px;
 }
 
 header p {
     color: #8b949e;
+    font-size: 0.95rem;
 }
 
 .upload-section {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .drop-zone {
     border: 2px dashed #30363d;
     border-radius: 12px;
-    padding: 40px;
+    padding: 35px;
     text-align: center;
     background: #161b22;
-    transition: all 0.3s ease;
+    transition: 0.3s ease;
 }
 
 .drop-zone.dragover {
@@ -53,18 +52,17 @@ header p {
 }
 
 .upload-icon {
-    font-size: 3rem;
+    font-size: 2.8rem;
     color: #58a6ff;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
-/* Card Konfirmasi File Baru */
 .confirm-card {
     background: #161b22;
     border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 25px;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -75,17 +73,16 @@ header p {
 .file-info {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
 }
 
 .file-info i {
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: #58a6ff;
 }
 
 .file-info h4 {
     color: #f0f6fc;
-    font-size: 1.1rem;
 }
 
 .file-info span {
@@ -102,7 +99,7 @@ header p {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 @media (max-width: 768px) {
@@ -116,120 +113,167 @@ header p {
     border: 1px solid #30363d;
     border-radius: 8px;
     padding: 15px;
-    display: flex;
-    flex-direction: column;
-    min-width: 0; /* Mencegah flex child meluber */
 }
 
 .panel h3 {
-    margin-bottom: 12px;
-    font-size: 1.1rem;
+    margin-bottom: 10px;
+    font-size: 1rem;
     color: #f0f6fc;
 }
 
 textarea {
     width: 100%;
-    height: 350px;
+    height: 280px;
     background: #0d1117;
     border: 1px solid #30363d;
     border-radius: 6px;
     color: #7ee787;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 0.9rem;
-    padding: 12px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.85rem;
+    padding: 10px;
     resize: vertical;
     outline: none;
-    white-space: pre-wrap; /* Memastikan teks panjang pindah baris */
-    word-break: break-all; /* Memotong karakter/kode tanpa spasi yang terlalu panjang */
-}
-
-textarea:focus {
-    border-color: #58a6ff;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 .actions {
-    margin-top: 15px;
+    margin-top: 12px;
     display: flex;
     gap: 10px;
 }
 
 button, .btn-primary {
-    display: inline-block;
-    padding: 10px 18px;
+    padding: 9px 16px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    transition: 0.2s ease;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
 }
 
 .btn-primary { background: #238636; color: #fff; }
-.btn-primary:hover { background: #2ea043; }
-
 .btn-success { background: #1f6feb; color: #fff; }
-.btn-success:hover { background: #388bfd; }
-
 .btn-warning { background: #d29922; color: #fff; }
-.btn-warning:hover { background: #e3b341; }
-
 .btn-secondary { background: #30363d; color: #c9d1d9; }
-.btn-secondary:hover { background: #8b949e; color: #0d1117; }
 
-button:disabled {
-    background: #21262d;
-    color: #484f58;
-    cursor: not-allowed;
+/* Styles Modal Popup Sesuai Screenshot */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 15px;
 }
 
-.report-section {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 20px;
-    overflow-hidden: hidden;
+.modal-card {
+    background: #212b36;
+    border: 1px solid #384451;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    padding: 25px 20px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.status-badge {
-    padding: 10px 15px;
-    border-radius: 6px;
+.modal-icon.red {
+    font-size: 2.8rem;
+    color: #ff5252;
+    margin-bottom: 12px;
+}
+
+.modal-card h2 {
+    color: #ffffff;
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+}
+
+.modal-desc {
+    color: #9cb0c5;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.modal-desc span {
+    color: #ffffff;
     font-weight: bold;
-    margin: 15px 0;
-    display: inline-block;
 }
 
-.status-badge.safe { background: rgba(46, 160, 67, 0.15); color: #3fb950; border: 1px solid #2ea043; }
-.status-badge.danger { background: rgba(248, 81, 73, 0.15); color: #f85149; border: 1px solid #f85149; }
-
-.log-list {
-    list-style: none;
+.url-section {
+    text-align: left;
+    margin-bottom: 20px;
 }
 
-/* Memperbaiki bug teks melebar pada log list */
-.log-list li {
-    padding: 12px;
-    border-bottom: 1px solid #21262d;
+.url-title {
+    color: #c9d1d9;
     font-size: 0.9rem;
-    word-break: break-word; /* Mencegah teks panjang keluar dari layar */
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.log-list code {
-    display: block;
-    background: #0d1117;
-    padding: 8px;
+.url-box {
+    background: #182029;
+    border: 1px solid #ff5252;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.url-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.tag-danger {
+    background: #e53935;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+.btn-copy {
+    background: #388e3c;
+    color: #ffffff;
+    padding: 4px 10px;
+    font-size: 0.75rem;
     border-radius: 4px;
-    margin-top: 5px;
-    word-break: break-all;
-    white-space: pre-wrap;
-    color: #e3b341;
 }
 
-.log-list li.threat-high { color: #f85149; }
-.log-list li.threat-medium { color: #d29922; }
+.url-text {
+    color: #e0e0e0;
+    font-family: monospace;
+    font-size: 0.82rem;
+    word-break: break-all;
+}
+
+.btn-modal-close {
+    width: 100%;
+    background: #e53935;
+    color: #ffffff;
+    padding: 12px;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
 
 footer {
     text-align: center;
-    margin-top: 40px;
+    margin-top: 30px;
     color: #484f58;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }

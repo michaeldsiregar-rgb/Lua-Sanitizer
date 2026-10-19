@@ -13,22 +13,55 @@ document.addEventListener('DOMContentLoaded', () => {
     const scanBtn = document.getElementById('scanBtn');
     const cleanBtn = document.getElementById('cleanBtn');
     const downloadBtn = document.getElementById('downloadBtn');
-    const reportSection = document.getElementById('reportSection');
-    const statusBadge = document.getElementById('statusBadge');
-    const logList = document.getElementById('logList');
+
+    // Modal Alert Elements
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalFileName = document.getElementById('modalFileName');
+    const patternCount = document.getElementById('patternCount');
+    const urlCount = document.getElementById('urlCount');
+    const urlSection = document.getElementById('urlSection');
+    const detectedUrlText = document.getElementById('detectedUrlText');
+    const copyUrlBtn = document.getElementById('copyUrlBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
 
     let pendingFileContent = '';
-    let fileName = 'cleaned_script.lua';
+    let currentFileName = 'script.lua';
+    let detectedUrl = '';
 
     const DANGEROUS_PATTERNS = [
-        { pattern: /httpGet|httpPost|httpRequest|asyncHttpRequest|performHttpRequest/gi, severity: 'High', name: 'HTTP Request (Pengiriman data ke Webhook/Server luar)' },
-        { pattern: /discord\.com\/api\/webhooks/gi, severity: 'High', name: 'Discord Webhook URL (Biasa digunakan penampung data keylogger)' },
-        { pattern: /io\.open|io\.input|io\.output/gi, severity: 'High', name: 'Akses Sistem File (Membaca file sensitif lokal)' },
-        { pattern: /loadstring|load\s*\(/gi, severity: 'Medium', name: 'Dynamic Code Execution (Eksekusi kode tersembunyi/obfuscated)' },
-        { pattern: /getfenv|setfenv/gi, severity: 'Medium', name: 'Environment Manipulation (Bypass proteksi/Hooks)' },
-        { pattern: /string\.char\s*\(\s*\d+/gi, severity: 'Medium', name: 'String Obfuscation (Penggunaan ASCII code tersembunyi)' },
-        { pattern: /onKey|KeyPress|KeyRelease|vkeys|getKeystate/gi, severity: 'High', name: 'Key Interception / Hook Keyboard (Sifat Utama Keylogger)' }
+        /httpGet|httpPost|httpRequest|asyncHttpRequest|performHttpRequest/gi,
+        /discord\.com\/api\/webhooks/gi,
+        /io\.open|io\.input|io\.output/gi,
+        /loadstring|load\s*\(/gi,
+        /getfenv|setfenv/gi,
+        /onKey|KeyPress|KeyRelease|vkeys|getKeystate/gi
     ];
+
+    const URL_PATTERN = /(https?:\/\/[^\s"'`()]+)/gi;
+
+    // Deobfuscator Otomatis untuk Mengurai Kode Enkripsi (ASCII/Hex/Escape)
+    function deobfuscateLua(code) {
+        let decoded = code;
+        // Decode Escape \104\101\108...
+        decoded = decoded.replace(/(\\(\d{1,3}))+/g, (match) => {
+            try {
+                return match.split('\\').filter(Boolean).map(n => String.fromCharCode(parseInt(n, 10))).join('');
+            } catch (e) { return match; }
+        });
+        // Decode string.char(...)
+        decoded = decoded.replace(/string\.char\s*\(\s*([\d\s,]+)\s*\)/gi, (match, group) => {
+            try {
+                return '"' + group.split(',').map(n => String.fromCharCode(parseInt(n.trim(), 10))).join('') + '"';
+            } catch (e) { return match; }
+        });
+        // Decode Hex \x68\x65...
+        decoded = decoded.replace(/(\\x[0-9a-fA-F]{2})+/g, (match) => {
+            try {
+                return match.split('\\x').filter(Boolean).map(h => String.fromCharCode(parseInt(h, 16))).join('');
+            } catch (e) { return match; }
+        });
+        return decoded;
+    }
 
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -40,105 +73,103 @@ document.addEventListener('DOMContentLoaded', () => {
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length) {
-            stageFile(e.dataTransfer.files[0]);
-        }
+        if (e.dataTransfer.files.length) stageFile(e.dataTransfer.files[0]);
     });
 
     fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length) {
-            stageFile(e.target.files[0]);
-        }
+        if (e.target.files.length) stageFile(e.target.files[0]);
     });
 
-    // Menyiapkan File & Menampilkan Kartu Konfirmasi (Belum Diproses)
     function stageFile(file) {
-        if (!file.name.endsWith('.lua') && !file.name.endsWith('.txt')) {
-            alert('Silakan unggah file berformat .lua!');
-            return;
-        }
-
-        fileName = file.name.replace('.lua', '_cleaned.lua');
+        currentFileName = file.name;
         loadedFileName.textContent = file.name;
         loadedFileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
 
         const reader = new FileReader();
         reader.onload = (e) => {
             pendingFileContent = e.target.result;
-            // Tampilkan kartu konfirmasi, sembunyikan workspace & laporan lama
             confirmCard.style.display = 'flex';
             workspace.style.display = 'none';
-            reportSection.style.display = 'none';
         };
         reader.readAsText(file);
     }
 
-    // Ketika Tombol "Konfirmasi & Pindai Lua" Ditekan
-    confirmScanBtn.addEventListener('click', () => {
-        rawCode.value = pendingFileContent;
-        confirmCard.style.display = 'none';
-        workspace.style.display = 'grid';
-        analyzeCode();
-    });
-
-    // Batal Pilihan File
     cancelFileBtn.addEventListener('click', () => {
         pendingFileContent = '';
         fileInput.value = '';
         confirmCard.style.display = 'none';
     });
 
+    confirmScanBtn.addEventListener('click', () => {
+        // Dekripsi enkripsi jika ada
+        const decoded = deobfuscateLua(pendingFileContent);
+        rawCode.value = decoded;
+        confirmCard.style.display = 'none';
+        workspace.style.display = 'grid';
+        analyzeCode();
+    });
+
     scanBtn.addEventListener('click', analyzeCode);
 
     function analyzeCode() {
         const code = rawCode.value;
-        const lines = code.split('\n');
-        logList.innerHTML = '';
-        let detections = [];
+        let matchedPatterns = 0;
+        let urlsFound = [];
 
-        lines.forEach((lineText, index) => {
-            DANGEROUS_PATTERNS.forEach(rule => {
-                if (rule.pattern.test(lineText)) {
-                    detections.push({
-                        line: index + 1,
-                        text: lineText.trim(),
-                        rule: rule.name,
-                        severity: rule.severity
-                    });
-                }
-            });
+        // Hitung pola mencurigakan
+        DANGEROUS_PATTERNS.forEach(pattern => {
+            const matches = code.match(pattern);
+            if (matches) matchedPatterns += matches.length;
         });
 
-        reportSection.style.display = 'block';
+        // Cari URL mencurigakan
+        const urlMatches = code.match(URL_PATTERN);
+        if (urlMatches) {
+            urlsFound = [...new Set(urlMatches)];
+        }
 
-        if (detections.length === 0) {
-            statusBadge.className = 'status-badge safe';
-            statusBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Skrip Bersih: Tidak ditemukan pola keylogger/stealer standar.';
-        } else {
-            statusBadge.className = 'status-badge danger';
-            statusBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Terdeteksi ${detections.length} Potensi Bahaya!`;
-            
-            detections.forEach(item => {
-                const li = document.createElement('li');
-                li.className = item.severity === 'High' ? 'threat-high' : 'threat-medium';
-                li.innerHTML = `<i class="fa-solid fa-bug"></i> <strong>Baris ${item.line}:</strong> [${item.severity}] ${item.rule} <br> <code>${escapeHtml(item.text)}</code>`;
-                logList.appendChild(li);
-            });
+        if (matchedPatterns > 0 || urlsFound.length > 0) {
+            showModalAlert(matchedPatterns, urlsFound);
         }
     }
 
-    cleanBtn.addEventListener('click', () => {
-        let code = rawCode.value;
-        let lines = code.split('\n');
-        let cleanedLines = lines.map(line => {
-            let isDangerous = DANGEROUS_PATTERNS.some(rule => rule.pattern.test(line));
-            if (isDangerous) {
-                return `-- [SECURITY SANITIZED] -- ` + line;
-            }
-            return line;
-        });
+    function showModalAlert(patternsCount, urls) {
+        modalFileName.textContent = currentFileName;
+        patternCount.textContent = patternsCount;
+        urlCount.textContent = urls.length;
 
-        cleanCode.value = cleanedLines.join('\n');
+        if (urls.length > 0) {
+            detectedUrl = urls[0];
+            detectedUrlText.textContent = detectedUrl;
+            urlSection.style.display = 'block';
+        } else {
+            urlSection.style.display = 'none';
+        }
+
+        modalOverlay.style.display = 'flex';
+    }
+
+    closeModalBtn.addEventListener('click', () => {
+        modalOverlay.style.display = 'none';
+    });
+
+    copyUrlBtn.addEventListener('click', () => {
+        if (detectedUrl) {
+            navigator.clipboard.writeText(detectedUrl);
+            copyUrlBtn.innerHTML = '<i class="fa-solid fa-check"></i> Tersalin!';
+            setTimeout(() => {
+                copyUrlBtn.innerHTML = '<i class="fa-solid fa-copy"></i> Salin URL';
+            }, 2000);
+        }
+    });
+
+    cleanBtn.addEventListener('click', () => {
+        let lines = rawCode.value.split('\n');
+        let cleaned = lines.map(line => {
+            let isDangerous = DANGEROUS_PATTERNS.some(p => p.test(line)) || URL_PATTERN.test(line);
+            return isDangerous ? `-- [SANITY REMOVED] -- ` + line : line;
+        });
+        cleanCode.value = cleaned.join('\n');
         downloadBtn.disabled = false;
     });
 
@@ -147,12 +178,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = fileName;
+        a.download = currentFileName.replace('.lua', '_cleaned.lua');
         a.click();
         URL.revokeObjectURL(url);
     });
-
-    function escapeHtml(text) {
-        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
 });
