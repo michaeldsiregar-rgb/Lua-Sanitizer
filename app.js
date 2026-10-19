@@ -182,12 +182,29 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Buat Versi Bersih di Latar Belakang
-        let cleanedLines = lines.map(line => {
-            let isDangerous = DANGEROUS_RULES.some(r => r.pattern.test(line)) || URL_PATTERN.test(line);
-            return isDangerous ? `-- [SANITY REMOVED] -- ` + line : line;
+        // ==========================================
+        // FITUR PEMBERSIHAN TOTAL (100% CLEAN SANITIZER)
+        // ==========================================
+        let cleanLines = lines.map(line => {
+            let processedLine = line;
+
+            // 1. Hapus/Netralkan semua URL
+            if (URL_PATTERN.test(processedLine)) {
+                processedLine = processedLine.replace(URL_PATTERN, '"https://sanitized-safe-url.local"');
+            }
+
+            // 2. Cek apakah ada pola berbahaya
+            let isDangerous = DANGEROUS_RULES.some(r => r.pattern.test(processedLine));
+
+            if (isDangerous) {
+                // Hapus total baris berbahaya dan ganti dengan penanda komentar netral
+                return `-- [CLEANED BY LUA GUARD: REMOVED THREAT]`;
+            }
+
+            return processedLine;
         });
-        cleanedFileContent = cleanedLines.join('\n');
+
+        cleanedFileContent = cleanLines.join('\n');
         downloadCleanBtn.disabled = false;
 
         // Tampilkan Modal Popup Jika Ada Ancaman
