@@ -11,7 +11,7 @@
     <div class="container">
         <header>
             <h1><i class="fa-solid fa-shield-halved"></i> Lua Guard & Anti-Keylogger</h1>
-            <p>Deteksi, Analisis, dan Bersihkan Skrip .Lua Anda dari Keylogger, Stealer, dan HTTP Hooks.</p>
+            <p>Deteksi, Analisis, dan Identifikasi Tier Ancaman pada Skrip .Lua Anda.</p>
         </header>
 
         <main>
@@ -40,23 +40,54 @@
                 </div>
             </div>
 
-            <!-- Workspace Editor Kode -->
-            <div class="workspace" id="workspace" style="display: none;">
-                <div class="panel">
-                    <h3><i class="fa-solid fa-code"></i> Kode Lua (Telah Didekripsi jika Enkripsi)</h3>
-                    <textarea id="rawCode" placeholder="Masukkan atau tempel kode .lua di sini..."></textarea>
-                    <div class="actions">
-                        <button id="scanBtn" class="btn-success"><i class="fa-solid fa-arrows-rotate"></i> Pindai Ulang</button>
+            <!-- Dashboard Hasil Analisis & Tier Ancaman -->
+            <div class="results-dashboard" id="resultsDashboard" style="display: none;">
+                <!-- Card Tier Status -->
+                <div class="tier-card" id="tierCard">
+                    <div class="tier-badge-icon" id="tierIcon">
+                        <i class="fa-solid fa-shield"></i>
+                    </div>
+                    <div class="tier-details">
+                        <span class="tier-subtitle">Tingkat Risiko Keamanan:</span>
+                        <h2 id="tierTitle">Tier 0 - Aman</h2>
+                        <p id="tierDesc">Tidak ditemukan pola keylogger atau indikasi mencurigakan pada skrip ini.</p>
                     </div>
                 </div>
 
-                <div class="panel">
-                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Hasil Pembersihan (Cleaned Lua)</h3>
-                    <textarea id="cleanCode" readonly placeholder="Hasil kode bersih akan muncul di sini..."></textarea>
-                    <div class="actions">
-                        <button id="cleanBtn" class="btn-warning"><i class="fa-solid fa-broom"></i> Bersihkan Kode</button>
-                        <button id="downloadBtn" class="btn-primary" disabled><i class="fa-solid fa-download"></i> Unduh File .Lua</button>
+                <!-- Ringkasan Statistik -->
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <i class="fa-solid fa-bug"></i>
+                        <div>
+                            <h3 id="statPatterns">0</h3>
+                            <p>Pola Mencurigakan</p>
+                        </div>
                     </div>
+                    <div class="stat-box">
+                        <i class="fa-solid fa-link"></i>
+                        <div>
+                            <h3 id="statUrls">0</h3>
+                            <p>URL Terdeteksi</p>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <i class="fa-solid fa-lock-open"></i>
+                        <div>
+                            <h3 id="statObfuscated">Tidak</h3>
+                            <p>Kode Terenkripsi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daftar Anomali / Temuan Mencurigakan -->
+                <div class="findings-panel" id="findingsPanel">
+                    <h3><i class="fa-solid fa-triangle-exclamation"></i> Detail Temuan Mencurigakan</h3>
+                    <ul class="findings-list" id="findingsList"></ul>
+                </div>
+
+                <!-- Aksis Pembersihan & Download -->
+                <div class="action-footer">
+                    <button id="downloadCleanBtn" class="btn-primary" disabled><i class="fa-solid fa-download"></i> Unduh File .Lua yang Dibersihkan</button>
                 </div>
             </div>
         </main>
@@ -66,7 +97,7 @@
         </footer>
     </div>
 
-    <!-- Modal Popup Alert (Persis Seperti di Foto) -->
+    <!-- Modal Alert Popup (Sesuai Desain Screenshot) -->
     <div class="modal-overlay" id="modalOverlay" style="display: none;">
         <div class="modal-card">
             <div class="modal-icon red">

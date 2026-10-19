@@ -7,12 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmScanBtn = document.getElementById('confirmScanBtn');
     const cancelFileBtn = document.getElementById('cancelFileBtn');
 
-    const workspace = document.getElementById('workspace');
-    const rawCode = document.getElementById('rawCode');
-    const cleanCode = document.getElementById('cleanCode');
-    const scanBtn = document.getElementById('scanBtn');
-    const cleanBtn = document.getElementById('cleanBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
+    // Dashboard Elements
+    const resultsDashboard = document.getElementById('resultsDashboard');
+    const tierCard = document.getElementById('tierCard');
+    const tierIcon = document.getElementById('tierIcon');
+    const tierTitle = document.getElementById('tierTitle');
+    const tierDesc = document.getElementById('tierDesc');
+    const statPatterns = document.getElementById('statPatterns');
+    const statUrls = document.getElementById('statUrls');
+    const statObfuscated = document.getElementById('statObfuscated');
+    const findingsList = document.getElementById('findingsList');
+    const downloadCleanBtn = document.getElementById('downloadCleanBtn');
 
     // Modal Alert Elements
     const modalOverlay = document.getElementById('modalOverlay');
@@ -25,42 +30,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.getElementById('closeModalBtn');
 
     let pendingFileContent = '';
+    let cleanedFileContent = '';
     let currentFileName = 'script.lua';
     let detectedUrl = '';
 
-    const DANGEROUS_PATTERNS = [
-        /httpGet|httpPost|httpRequest|asyncHttpRequest|performHttpRequest/gi,
-        /discord\.com\/api\/webhooks/gi,
-        /io\.open|io\.input|io\.output/gi,
-        /loadstring|load\s*\(/gi,
-        /getfenv|setfenv/gi,
-        /onKey|KeyPress|KeyRelease|vkeys|getKeystate/gi
+    const DANGEROUS_RULES = [
+        { pattern: /httpGet|httpPost|httpRequest|asyncHttpRequest|performHttpRequest/gi, severity: 'High', name: 'Fungsi Exfiltration Data (HTTP Request)' },
+        { pattern: /discord\.com\/api\/webhooks/gi, severity: 'High', name: 'Discord Webhook URL (Penampung Data Stealer)' },
+        { pattern: /onKey|KeyPress|KeyRelease|vkeys|getKeystate/gi, severity: 'High', name: 'Keyboard Hooking / Key Interception' },
+        { pattern: /io\.open|io\.input|io\.output/gi, severity: 'Medium', name: 'Akses Pembacaan File Lokal / Sistem' },
+        { pattern: /loadstring|load\s*\(/gi, severity: 'Medium', name: 'Dynamic Code Execution' },
+        { pattern: /getfenv|setfenv/gi, severity: 'Low', name: 'Environment Hooking / Manipulation' }
     ];
 
     const URL_PATTERN = /(https?:\/\/[^\s"'`()]+)/gi;
 
-    // Deobfuscator Otomatis untuk Mengurai Kode Enkripsi (ASCII/Hex/Escape)
+    // Deobfuscator Otomatis untuk Mengurai Kode Terenkripsi
     function deobfuscateLua(code) {
         let decoded = code;
+        let isObfuscated = false;
+
+        if (/(\\(\d{1,3}))+/g.test(decoded) || /string\.char\s*\(/gi.test(decoded) || /(\\x[0-9a-fA-F]{2})+/g.test(decoded)) {
+            isObfuscated = true;
+        }
+
         // Decode Escape \104\101\108...
         decoded = decoded.replace(/(\\(\d{1,3}))+/g, (match) => {
             try {
                 return match.split('\\').filter(Boolean).map(n => String.fromCharCode(parseInt(n, 10))).join('');
             } catch (e) { return match; }
         });
+
         // Decode string.char(...)
         decoded = decoded.replace(/string\.char\s*\(\s*([\d\s,]+)\s*\)/gi, (match, group) => {
             try {
                 return '"' + group.split(',').map(n => String.fromCharCode(parseInt(n.trim(), 10))).join('') + '"';
             } catch (e) { return match; }
         });
+
         // Decode Hex \x68\x65...
         decoded = decoded.replace(/(\\x[0-9a-fA-F]{2})+/g, (match) => {
             try {
                 return match.split('\\x').filter(Boolean).map(h => String.fromCharCode(parseInt(h, 16))).join('');
             } catch (e) { return match; }
         });
-        return decoded;
+
+        return { decoded, isObfuscated };
     }
 
     dropZone.addEventListener('dragover', (e) => {
@@ -89,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onload = (e) => {
             pendingFileContent = e.target.result;
             confirmCard.style.display = 'flex';
-            workspace.style.display = 'none';
+            resultsDashboard.style.display = 'none';
         };
         reader.readAsText(file);
     }
@@ -101,35 +116,108 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     confirmScanBtn.addEventListener('click', () => {
-        // Dekripsi enkripsi jika ada
-        const decoded = deobfuscateLua(pendingFileContent);
-        rawCode.value = decoded;
         confirmCard.style.display = 'none';
-        workspace.style.display = 'grid';
+        resultsDashboard.style.display = 'flex';
         analyzeCode();
     });
 
-    scanBtn.addEventListener('click', analyzeCode);
-
     function analyzeCode() {
-        const code = rawCode.value;
-        let matchedPatterns = 0;
+        const { decoded, isObfuscated } = deobfuscateLua(pendingFileContent);
+        const lines = decoded.split('\n');
+
+        let detections = [];
         let urlsFound = [];
 
-        // Hitung pola mencurigakan
-        DANGEROUS_PATTERNS.forEach(pattern => {
-            const matches = code.match(pattern);
-            if (matches) matchedPatterns += matches.length;
+        // Pindai Aturan Berbahaya per Baris
+        lines.forEach((lineText, index) => {
+            DANGEROUS_RULES.forEach(rule => {
+                if (rule.pattern.test(lineText)) {
+                    detections.push({
+                        line: index + 1,
+                        name: rule.name,
+                        severity: rule.severity
+                    });
+                }
+            });
         });
 
-        // Cari URL mencurigakan
-        const urlMatches = code.match(URL_PATTERN);
+        // Pindai URL
+        const urlMatches = decoded.match(URL_PATTERN);
         if (urlMatches) {
             urlsFound = [...new Set(urlMatches)];
         }
 
-        if (matchedPatterns > 0 || urlsFound.length > 0) {
-            showModalAlert(matchedPatterns, urlsFound);
+        // Tentukan Tier Risiko
+        let tier = 0;
+        let hasHighSev = detections.some(d => d.severity === 'High');
+        let hasMedSev = detections.some(d => d.severity === 'Medium');
+
+        if (hasHighSev || urlsFound.length > 0) {
+            tier = 3; // Critical / High Risk
+        } else if (hasMedSev || isObfuscated) {
+            tier = 2; // Medium Risk
+        } else if (detections.length > 0) {
+            tier = 1; // Low Risk
+        }
+
+        // Update UI Tier Dashboard
+        updateTierUI(tier, detections.length, urlsFound.length, isObfuscated);
+
+        // Populate Findings List
+        findingsList.innerHTML = '';
+        if (detections.length === 0 && urlsFound.length === 0) {
+            findingsList.innerHTML = '<li class="sev-low"><i class="fa-solid fa-circle-check"></i> Tidak ada indikator ancaman yang terdeteksi.</li>';
+        } else {
+            detections.forEach(item => {
+                const li = document.createElement('li');
+                li.className = item.severity === 'High' ? 'sev-high' : (item.severity === 'Medium' ? 'sev-medium' : 'sev-low');
+                li.innerHTML = `<strong>Baris ${item.line}:</strong> [${item.severity}] ${item.name}`;
+                findingsList.appendChild(li);
+            });
+            urlsFound.forEach(u => {
+                const li = document.createElement('li');
+                li.className = 'sev-high';
+                li.innerHTML = `<strong>URL Terdeteksi:</strong> ${u}`;
+                findingsList.appendChild(li);
+            });
+        }
+
+        // Buat Versi Bersih di Latar Belakang
+        let cleanedLines = lines.map(line => {
+            let isDangerous = DANGEROUS_RULES.some(r => r.pattern.test(line)) || URL_PATTERN.test(line);
+            return isDangerous ? `-- [SANITY REMOVED] -- ` + line : line;
+        });
+        cleanedFileContent = cleanedLines.join('\n');
+        downloadCleanBtn.disabled = false;
+
+        // Tampilkan Modal Popup Jika Ada Ancaman
+        if (tier >= 2) {
+            showModalAlert(detections.length, urlsFound);
+        }
+    }
+
+    function updateTierUI(tier, patternCountVal, urlCountVal, isObf) {
+        tierCard.className = `tier-card tier-${tier}`;
+        statPatterns.textContent = patternCountVal;
+        statUrls.textContent = urlCountVal;
+        statObfuscated.textContent = isObf ? 'Ya' : 'Tidak';
+
+        if (tier === 3) {
+            tierIcon.innerHTML = '<i class="fa-solid fa-skull-crossbones"></i>';
+            tierTitle.textContent = 'Tier 3 - Bahaya Tinggi (Critical)';
+            tierDesc.textContent = 'Skrip ini sangat berpotensi mengandung Keylogger, Webhook Stealer, atau exfiltration data.';
+        } else if (tier === 2) {
+            tierIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            tierTitle.textContent = 'Tier 2 - Risiko Sedang (Suspicious)';
+            tierDesc.textContent = 'Terdeteksi enkripsi/obfuscation atau akses sistem file yang perlu diwaspadai.';
+        } else if (tier === 1) {
+            tierIcon.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+            tierTitle.textContent = 'Tier 1 - Risiko Rendah (Low)';
+            tierDesc.textContent = 'Terdapat beberapa fungsi biasa yang perlu perhatian ringan.';
+        } else {
+            tierIcon.innerHTML = '<i class="fa-solid fa-shield-check"></i>';
+            tierTitle.textContent = 'Tier 0 - Aman (Clean)';
+            tierDesc.textContent = 'Skrip bersih dan tidak mengandung pola keylogger yang terdeteksi.';
         }
     }
 
@@ -163,18 +251,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    cleanBtn.addEventListener('click', () => {
-        let lines = rawCode.value.split('\n');
-        let cleaned = lines.map(line => {
-            let isDangerous = DANGEROUS_PATTERNS.some(p => p.test(line)) || URL_PATTERN.test(line);
-            return isDangerous ? `-- [SANITY REMOVED] -- ` + line : line;
-        });
-        cleanCode.value = cleaned.join('\n');
-        downloadBtn.disabled = false;
-    });
-
-    downloadBtn.addEventListener('click', () => {
-        const blob = new Blob([cleanCode.value], { type: 'text/plain' });
+    downloadCleanBtn.addEventListener('click', () => {
+        const blob = new Blob([cleanedFileContent], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
