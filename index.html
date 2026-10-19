@@ -71,7 +71,19 @@
                 File "<span id="modalFileName">file.lua</span>" mengandung <span id="patternCount">0</span> pola mencurigakan dan <span id="urlCount">0</span> URL mencurigakan. File ini berpotensi sebagai keylogger!
             </p>
 
-            <div class="danger-url-panel" id="urlSection" style="display: none;">
+            <div class="danger-panel" id="patternSection" style="display: none;">
+                <div class="panel-label">
+                    <i class="fa-solid fa-bug"></i> Pola Mencurigakan yang Ditemukan
+                </div>
+                <div class="pattern-content-card">
+                    <div class="pattern-card-header">
+                        <span class="danger-badge">ANOMALI FUNGSI</span>
+                    </div>
+                    <div class="pattern-display" id="detectedPatternText">-</div>
+                </div>
+            </div>
+
+            <div class="danger-panel" id="urlSection" style="display: none;">
                 <div class="panel-label">
                     <i class="fa-solid fa-link"></i> URL Mencurigakan yang Ditemukan
                 </div>

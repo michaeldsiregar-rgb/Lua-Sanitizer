@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalDesc = document.getElementById('modalDesc');
     const patternCount = document.getElementById('patternCount');
     const urlCount = document.getElementById('urlCount');
+    
+    const patternSection = document.getElementById('patternSection');
+    const detectedPatternText = document.getElementById('detectedPatternText');
+    
     const urlSection = document.getElementById('urlSection');
     const detectedUrlText = document.getElementById('detectedUrlText');
     const copyUrlBtn = document.getElementById('copyUrlBtn');
@@ -27,13 +31,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentFileName = '';
     let detectedUrl = '';
 
-    const DANGEROUS_PATTERNS = [
-        /httpGet|httpPost|httpRequest|asyncHttpRequest|performHttpRequest/gi,
-        /discord\.com\/api\/webhooks/gi,
-        /onKey|KeyPress|KeyRelease|vkeys|getKeystate/gi,
-        /io\.open|io\.input|io\.output/gi,
-        /loadstring|load\s*\(/gi,
-        /getfenv|setfenv/gi
+    const DANGEROUS_RULES = [
+        { pattern: /httpGet|httpPost|httpRequest|asyncHttpRequest|performHttpRequest/gi, label: 'HTTP Exfiltration' },
+        { pattern: /discord\.com\/api\/webhooks/gi, label: 'Discord Webhook' },
+        { pattern: /onKey|KeyPress|KeyRelease|vkeys|getKeystate/gi, label: 'Keyboard Hook' },
+        { pattern: /io\.open|io\.input|io\.output/gi, label: 'File Access (io)' },
+        { pattern: /loadstring|load\s*\(/gi, label: 'Dynamic Execution' },
+        { pattern: /getfenv|setfenv/gi, label: 'Environment Hook' }
     ];
 
     const URL_PATTERN = /(https?:\/\/[^\s"'`()]+)/gi;
@@ -112,11 +116,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const lines = decodedCode.split('\n');
 
         let patternMatchesCount = 0;
+        let detectedLabels = [];
         let urlsFound = [];
 
-        DANGEROUS_PATTERNS.forEach(pattern => {
-            const matches = decodedCode.match(pattern);
-            if (matches) patternMatchesCount += matches.length;
+        DANGEROUS_RULES.forEach(rule => {
+            const matches = decodedCode.match(rule.pattern);
+            if (matches) {
+                patternMatchesCount += matches.length;
+                detectedLabels.push(rule.label);
+            }
         });
 
         const urlMatches = decodedCode.match(URL_PATTERN);
@@ -129,26 +137,33 @@ document.addEventListener('DOMContentLoaded', () => {
             if (URL_PATTERN.test(lineStr)) {
                 lineStr = lineStr.replace(URL_PATTERN, '"https://sanitized-safe-url.local"');
             }
-            let isDangerous = DANGEROUS_PATTERNS.some(p => p.test(lineStr));
+            let isDangerous = DANGEROUS_RULES.some(r => r.pattern.test(lineStr));
             return isDangerous ? '' : lineStr;
         });
 
         cleanedFileContent = cleanedLines.filter(line => line.trim() !== '').join('\n');
         downloadCleanBtn.style.display = 'flex';
 
-        showResultModal(patternMatchesCount, urlsFound);
+        showResultModal(patternMatchesCount, detectedLabels, urlsFound);
     }
 
-    function showResultModal(patterns, urls) {
+    function showResultModal(patternsCount, patternLabels, urls) {
         modalFileName.textContent = currentFileName;
 
-        if (patterns > 0 || urls.length > 0) {
+        if (patternsCount > 0 || urls.length > 0) {
             modalIcon.className = 'modal-header-icon red';
             modalIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
             modalTitle.textContent = 'Keylogger Terdeteksi!';
             modalDesc.style.display = 'block';
-            patternCount.textContent = patterns;
+            patternCount.textContent = patternsCount;
             urlCount.textContent = urls.length;
+
+            if (patternLabels.length > 0) {
+                detectedPatternText.textContent = [...new Set(patternLabels)].join(', ');
+                patternSection.style.display = 'block';
+            } else {
+                patternSection.style.display = 'none';
+            }
 
             if (urls.length > 0) {
                 detectedUrl = urls[0];
@@ -165,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modalIcon.innerHTML = '<i class="fa-solid fa-shield-check"></i>';
             modalTitle.textContent = 'File Bersih & Aman!';
             modalDesc.style.display = 'none';
+            patternSection.style.display = 'none';
             urlSection.style.display = 'none';
 
             closeModalBtn.className = 'btn-modal-action safe';
