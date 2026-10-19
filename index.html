@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lua Script Sanitizer & Anti-Keylogger</title>
+    <title>Lua Guard & Anti-Keylogger</title>
     <link rel="stylesheet" href="style.css">
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -26,13 +25,28 @@
                 </div>
             </div>
 
+            <!-- Card Konfirmasi Upload (Fitur Baru) -->
+            <div class="confirm-card" id="confirmCard" style="display: none;">
+                <div class="file-info">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <div>
+                        <h4 id="loadedFileName">nama_file.lua</h4>
+                        <span id="loadedFileSize">0 KB</span>
+                    </div>
+                </div>
+                <div class="confirm-actions">
+                    <button id="cancelFileBtn" class="btn-secondary"><i class="fa-solid fa-xmark"></i> Batal</button>
+                    <button id="confirmScanBtn" class="btn-success"><i class="fa-solid fa-magnifying-glass"></i> Konfirmasi & Pindai Lua</button>
+                </div>
+            </div>
+
             <!-- Code Editor & Analysis Panel -->
             <div class="workspace" id="workspace" style="display: none;">
                 <div class="panel">
                     <h3><i class="fa-solid fa-code"></i> Kode Lua Asli</h3>
                     <textarea id="rawCode" placeholder="Masukkan atau tempel kode .lua di sini..."></textarea>
                     <div class="actions">
-                        <button id="scanBtn" class="btn-success"><i class="fa-solid fa-magnifying-glass"></i> Pindai Kode</button>
+                        <button id="scanBtn" class="btn-success"><i class="fa-solid fa-arrows-rotate"></i> Pindai Ulang</button>
                     </div>
                 </div>
 

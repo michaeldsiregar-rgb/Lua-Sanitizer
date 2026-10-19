@@ -10,11 +10,13 @@ body {
     color: #c9d1d9;
     min-height: 100vh;
     padding: 20px;
+    overflow-x: hidden; /* Mencegah layar geser horizontal berlebih */
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    width: 100%;
 }
 
 header {
@@ -56,6 +58,46 @@ header p {
     margin-bottom: 15px;
 }
 
+/* Card Konfirmasi File Baru */
+.confirm-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.file-info i {
+    font-size: 2rem;
+    color: #58a6ff;
+}
+
+.file-info h4 {
+    color: #f0f6fc;
+    font-size: 1.1rem;
+}
+
+.file-info span {
+    color: #8b949e;
+    font-size: 0.85rem;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 10px;
+}
+
 .workspace {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -76,6 +118,7 @@ header p {
     padding: 15px;
     display: flex;
     flex-direction: column;
+    min-width: 0; /* Mencegah flex child meluber */
 }
 
 .panel h3 {
@@ -96,6 +139,8 @@ textarea {
     padding: 12px;
     resize: vertical;
     outline: none;
+    white-space: pre-wrap; /* Memastikan teks panjang pindah baris */
+    word-break: break-all; /* Memotong karakter/kode tanpa spasi yang terlalu panjang */
 }
 
 textarea:focus {
@@ -128,6 +173,9 @@ button, .btn-primary {
 .btn-warning { background: #d29922; color: #fff; }
 .btn-warning:hover { background: #e3b341; }
 
+.btn-secondary { background: #30363d; color: #c9d1d9; }
+.btn-secondary:hover { background: #8b949e; color: #0d1117; }
+
 button:disabled {
     background: #21262d;
     color: #484f58;
@@ -139,6 +187,7 @@ button:disabled {
     border: 1px solid #30363d;
     border-radius: 8px;
     padding: 20px;
+    overflow-hidden: hidden;
 }
 
 .status-badge {
@@ -156,13 +205,23 @@ button:disabled {
     list-style: none;
 }
 
+/* Memperbaiki bug teks melebar pada log list */
 .log-list li {
-    padding: 10px;
+    padding: 12px;
     border-bottom: 1px solid #21262d;
     font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    word-break: break-word; /* Mencegah teks panjang keluar dari layar */
+}
+
+.log-list code {
+    display: block;
+    background: #0d1117;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 5px;
+    word-break: break-all;
+    white-space: pre-wrap;
+    color: #e3b341;
 }
 
 .log-list li.threat-high { color: #f85149; }
