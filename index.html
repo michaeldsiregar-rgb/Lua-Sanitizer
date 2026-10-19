@@ -8,68 +8,83 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo-title">
-                <i class="fa-solid fa-shield-halved"></i>
-                <h1>Check Keylogger</h1>
+    <div class="app-wrapper">
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Check Keylogger</h1>
+                    <span class="badge-tag">Lua Security Engine</span>
+                </div>
             </div>
-            <p>kusus cek keylogger lua</p>
+            <p class="subtitle">Khusus memeriksa keylogger pada skrip Lua</p>
         </header>
 
-        <main>
-            <div class="upload-card">
-                <div class="drop-zone" id="dropZone">
-                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
-                    <p class="drop-title">Klik atau seret file ke sini untuk mengunggah</p>
-                    <p class="drop-sub">Format yang didukung: .lua</p>
-                    <label for="fileInput" class="btn-choose"><i class="fa-solid fa-folder"></i> Pilih File</label>
+        <main class="app-main">
+            <div class="scanner-card">
+                <div class="drop-area" id="dropZone">
+                    <div class="icon-bubble">
+                        <i class="fa-solid fa-file-shield"></i>
+                    </div>
+                    <h2>Pilih atau tarik file .lua Anda</h2>
+                    <p>Format yang didukung secara resmi: <code>.lua</code></p>
+                    <label for="fileInput" class="btn-browse">
+                        <i class="fa-solid fa-folder-open"></i> Cari File
+                    </label>
                     <input type="file" id="fileInput" accept=".lua,.txt" hidden>
                 </div>
 
-                <div class="file-preview" id="filePreview" style="display: none;">
-                    <div class="file-details">
-                        <span id="fileNameText">file.lua</span>
-                        <span id="fileSizeText" class="file-size">0 KB</span>
+                <div class="file-status-box" id="filePreview" style="display: none;">
+                    <div class="file-icon-wrap">
+                        <i class="fa-solid fa-file-code"></i>
                     </div>
+                    <div class="file-meta">
+                        <span id="fileNameText" class="file-title">nama_file.lua</span>
+                        <span id="fileSizeText" class="file-info">0 KB</span>
+                    </div>
+                    <div class="file-badge">Siap Diperiksa</div>
                 </div>
 
-                <button id="scanBtn" class="btn-scan" disabled>
-                    <i class="fa-solid fa-magnifying-glass" id="scanIcon"></i>
-                    <span id="scanBtnText">Periksa File</span>
-                </button>
+                <div class="action-group">
+                    <button id="scanBtn" class="btn-primary-action" disabled>
+                        <i class="fa-solid fa-magnifying-glass" id="scanIcon"></i>
+                        <span id="scanBtnText">Periksa File</span>
+                    </button>
 
-                <button id="downloadCleanBtn" class="btn-download" style="display: none;">
-                    <i class="fa-solid fa-download"></i> Unduh File Bersih
-                </button>
+                    <button id="downloadCleanBtn" class="btn-secondary-action" style="display: none;">
+                        <i class="fa-solid fa-file-export"></i> Unduh File Bersih
+                    </button>
+                </div>
             </div>
         </main>
     </div>
 
-    <div class="modal-overlay" id="modalOverlay" style="display: none;">
-        <div class="modal-card">
-            <div class="modal-icon red" id="modalIcon">
-                <i class="fa-solid fa-skull-crossbones"></i>
+    <div class="modal-backdrop" id="modalOverlay" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-header-icon red" id="modalIcon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <h2 id="modalTitle">Keylogger Terdeteksi!</h2>
-            <p class="modal-desc" id="modalDesc">
+            <p class="modal-body-text" id="modalDesc">
                 File "<span id="modalFileName">file.lua</span>" mengandung <span id="patternCount">0</span> pola mencurigakan dan <span id="urlCount">0</span> URL mencurigakan. File ini berpotensi sebagai keylogger!
             </p>
 
-            <div class="url-section" id="urlSection" style="display: none;">
-                <div class="url-title">
+            <div class="danger-url-panel" id="urlSection" style="display: none;">
+                <div class="panel-label">
                     <i class="fa-solid fa-link"></i> URL Mencurigakan yang Ditemukan
                 </div>
-                <div class="url-box">
-                    <div class="url-header">
-                        <span class="tag-danger">HTTP/HTTPS URL</span>
-                        <button class="btn-copy" id="copyUrlBtn"><i class="fa-solid fa-copy"></i> Salin URL</button>
+                <div class="url-content-card">
+                    <div class="url-card-header">
+                        <span class="danger-badge">HTTP/HTTPS URL</span>
+                        <button class="btn-copy-link" id="copyUrlBtn"><i class="fa-solid fa-copy"></i> Salin URL</button>
                     </div>
-                    <div class="url-text" id="detectedUrlText">-</div>
+                    <div class="url-display" id="detectedUrlText">-</div>
                 </div>
             </div>
 
-            <button class="btn-modal-close" id="closeModalBtn"><i class="fa-solid fa-shield"></i> Mengerti</button>
+            <button class="btn-modal-action" id="closeModalBtn">Mengerti</button>
         </div>
     </div>
 

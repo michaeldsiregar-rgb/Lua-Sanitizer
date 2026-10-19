@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const reader = new FileReader();
         reader.onload = (e) => {
             rawFileContent = e.target.result;
-            filePreview.style.display = 'block';
+            filePreview.style.display = 'flex';
             scanBtn.disabled = false;
             downloadCleanBtn.style.display = 'none';
         };
@@ -143,8 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modalFileName.textContent = currentFileName;
 
         if (patterns > 0 || urls.length > 0) {
-            modalIcon.className = 'modal-icon red';
-            modalIcon.innerHTML = '<i class="fa-solid fa-skull-crossbones"></i>';
+            modalIcon.className = 'modal-header-icon red';
+            modalIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
             modalTitle.textContent = 'Keylogger Terdeteksi!';
             modalDesc.style.display = 'block';
             patternCount.textContent = patterns;
@@ -158,16 +158,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 urlSection.style.display = 'none';
             }
 
-            closeModalBtn.className = 'btn-modal-close';
+            closeModalBtn.className = 'btn-modal-action';
             closeModalBtn.textContent = 'Mengerti';
         } else {
-            modalIcon.className = 'modal-icon green';
-            modalIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            modalIcon.className = 'modal-header-icon green';
+            modalIcon.innerHTML = '<i class="fa-solid fa-shield-check"></i>';
             modalTitle.textContent = 'File Bersih & Aman!';
             modalDesc.style.display = 'none';
             urlSection.style.display = 'none';
 
-            closeModalBtn.className = 'btn-modal-close safe';
+            closeModalBtn.className = 'btn-modal-action safe';
             closeModalBtn.textContent = 'Tutup';
         }
 
